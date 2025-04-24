@@ -1,7 +1,9 @@
 import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
-SIZE = 100 # Size of the grid
-IS_WRAPAROUND  = False # If True, the grid wraps around at the edges
+SIZE = 6 # Size of the grid
+IS_WRAPAROUND  = True # If True, the grid wraps around at the edges
 
 def init_grid(p):
     """
@@ -72,8 +74,14 @@ def update_grid(grid, phase):
     for i, j in coords:
         block = extract_block(grid, i, j)
         new_block = apply_rules_to_block(block)
-        grid[i:i+2, j:j+2] = new_block
-    
+
+        for di in range(2):
+            for dj in range(2):
+                ni = (i + di) % SIZE if IS_WRAPAROUND else i + di
+                nj = (j + dj) % SIZE if IS_WRAPAROUND else j + dj
+                if ni < SIZE and nj < SIZE:  # check bounds if not wraparound
+                    grid[ni, nj] = new_block[di, dj]
+
     return grid
 
 def run_simulation(phases, prob):
@@ -90,6 +98,63 @@ def run_simulation(phases, prob):
     
     return grid
 
+def run_gui_simulation(phases, prob, interval=1000):
+    """
+    This function runs the simulation with a GUI.
+    param phases: The number of phases to run the simulation.
+    param prob: The probability of a cell being alive.
+    param interval: The interval between frames in milliseconds.
+    """
+    grid = init_grid(prob)
+
+    fig, ax = plt.subplots()
+    img = ax.imshow(grid, cmap='Greys', vmin=0, vmax=1)
+    title = ax.set_title("")
+
+    def update(phase):
+        nonlocal grid
+        grid = update_grid(grid, phase)
+        img.set_data(grid)
+
+        color = "Red" if phase % 2 == 0 else "Blue"
+        title.set_text(f"Phase {phase} — {color} blocks")
+
+        for patch in ax.patches:
+            patch.remove()
+        coords = get_block_coords(phase)
+        for i, j in coords:
+            color = 'red' if phase % 2 == 0 else 'blue'
+
+            # Coordinates of the second cell in the 2x2 block (with wraparound)
+            i2 = (i + 1) % SIZE
+            j2 = (j + 1) % SIZE
+
+            # If no wraparound is needed, draw a single rectangle
+            if i2 > i and j2 > j:
+                rect = plt.Rectangle((j - 0.5, i - 0.5), 2, 2,
+                                    linewidth=1, edgecolor=color, facecolor='none')
+                ax.add_patch(rect)
+            else:
+                # Wraparound occurs – draw four 1x1 rectangles for the corners
+                parts = [
+                    ((j % SIZE - 0.5, i % SIZE - 0.5), 1, 1),
+                    (((j + 1) % SIZE - 0.5, i % SIZE - 0.5), 1, 1),
+                    ((j % SIZE - 0.5, (i + 1) % SIZE - 0.5), 1, 1),
+                    (((j + 1) % SIZE - 0.5, (i + 1) % SIZE - 0.5), 1, 1),
+                ]
+                for (x, y), w, h in parts:
+                    rect = plt.Rectangle((x, y), w, h,
+                                        linewidth=1, edgecolor=color, facecolor='none')
+                    ax.add_patch(rect)
+
+
+        return [img, title]
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=phases, interval=interval, blit=False, repeat=False
+    )
+    plt.show()
+
 
 if __name__ == "__main__":
     """
@@ -99,4 +164,4 @@ if __name__ == "__main__":
     phases = 250
     prob = 0.5  # probability of cell being alive
 
-    final_grid = run_simulation(phases, prob)    
+    run_gui_simulation(phases, prob, interval=2000)
