@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-SIZE = 6 # Size of the grid
+SIZE = 100 # Size of the grid
 IS_WRAPAROUND  = True # If True, the grid wraps around at the edges
 
 def init_grid(p):
@@ -84,77 +84,106 @@ def update_grid(grid, phase):
 
     return grid
 
-def run_simulation(phases, prob):
+def calculate_metrics(prev_grid, current_grid):
     """
-    This function runs the simulation for a given number of steps.
-    param phases: The number of phases to run the simulation.
-    param prob: The probability of a cell being alive.
+    Calculate metrics for the current simulation step.
+
+    Returns:
+        - stability: Percentage of cells that stayed the same.
+        - alive_ratio: Percentage of alive cells (value == 1).
     """
-    grid = init_grid(prob)
-    
-    for phase in range(phases):
-        grid = update_grid(grid, phase)
-        print(grid)  # Uncomment to see the grid at each phase
-    
-    return grid
+    stability = np.mean(prev_grid == current_grid) * 100
+    alive_ratio = np.mean(current_grid) * 100
+    return stability, alive_ratio
+
+def calculate_block_diversity(grid, phase):
+    """
+    Calculate how many unique 2x2 block patterns exist in the current grid.
+    :param grid: The current grid (numpy array).
+    :param phase: The current phase (determines which blocks to use).
+    :return: Number of unique 2x2 block patterns.
+    """
+    coords = get_block_coords(phase)
+    seen_patterns = set()
+
+    for i, j in coords:
+        block = extract_block(grid, i, j)
+        pattern = tuple(block.flatten())  # Convert block to hashable tuple
+        seen_patterns.add(pattern)
+
+    return len(seen_patterns)
+
+def calculate_oscillation_score(prev_prev_grid, prev_grid, current_grid):
+    """
+    Calculate the oscillation score based on the last three states.
+    A cell is considered oscillating if its value changed from prev_prev to prev and then back in current.
+    """
+    if prev_prev_grid is None:
+        return 0  # Not enough history
+
+    oscillating = (prev_prev_grid == current_grid) & (prev_prev_grid != prev_grid)
+    return int(np.sum(oscillating))
 
 def run_gui_simulation(phases, prob, interval=1000):
     """
-    This function runs the simulation with a GUI.
-    param phases: The number of phases to run the simulation.
+    Run the GUI simulation of the automaton.
+    param phases: The number of phases to simulate.
     param prob: The probability of a cell being alive.
     param interval: The interval between frames in milliseconds.
     """
     grid = init_grid(prob)
+    prev_grid = grid.copy()
+    prev_prev_grid = None
 
     fig, ax = plt.subplots()
     img = ax.imshow(grid, cmap='Greys', vmin=0, vmax=1)
     title = ax.set_title("")
 
+    wrap_text = "Wraparound: ON" if IS_WRAPAROUND else "Wraparound: OFF"
+    size_text = f"Grid size: {SIZE}x{SIZE}"
+
+    # Show initial state as Phase 0
+    img.set_data(grid)
+    title.set_text(
+    f"Phase 0 – Initial State\n"
+    f"{wrap_text} | {size_text}"
+    )
+    plt.pause(1.5)  # pause briefly to show initial state
+    plt.get_current_fig_manager().window.state('zoomed')  # maximize the window (Windows only)
+
     def update(phase):
-        nonlocal grid
-        grid = update_grid(grid, phase)
-        img.set_data(grid)
+        """
+        Update the grid for each phase.
+        param phase: The current phase of the simulation.
+        return: A list of artists to update in the animation.
+        """
+        nonlocal grid, prev_grid, prev_prev_grid
 
-        color = "Red" if phase % 2 == 0 else "Blue"
-        title.set_text(f"Phase {phase} — {color} blocks")
+        new_grid = update_grid(grid.copy(), phase)
 
-        for patch in ax.patches:
-            patch.remove()
-        coords = get_block_coords(phase)
-        for i, j in coords:
-            color = 'red' if phase % 2 == 0 else 'blue'
+        stability, alive_ratio = calculate_metrics(prev_grid, new_grid)
+        diversity = calculate_block_diversity(new_grid, phase)
+        oscillation = calculate_oscillation_score(prev_prev_grid, prev_grid, new_grid)
 
-            # Coordinates of the second cell in the 2x2 block (with wraparound)
-            i2 = (i + 1) % SIZE
-            j2 = (j + 1) % SIZE
+        img.set_data(new_grid)
+        block_color = 'Red' if phase % 2 == 0 else 'Blue'
+        title.set_text(
+            f"Phase {phase} – {block_color} blocks\n"
+            f"{wrap_text} | {size_text}\n"
+            f"Stability: {stability:.1f}% | Alive: {alive_ratio:.1f}% | "
+            f"Diversity: {diversity} | Oscillation: {oscillation}"
+        )
 
-            # If no wraparound is needed, draw a single rectangle
-            if i2 > i and j2 > j:
-                rect = plt.Rectangle((j - 0.5, i - 0.5), 2, 2,
-                                    linewidth=1, edgecolor=color, facecolor='none')
-                ax.add_patch(rect)
-            else:
-                # Wraparound occurs – draw four 1x1 rectangles for the corners
-                parts = [
-                    ((j % SIZE - 0.5, i % SIZE - 0.5), 1, 1),
-                    (((j + 1) % SIZE - 0.5, i % SIZE - 0.5), 1, 1),
-                    ((j % SIZE - 0.5, (i + 1) % SIZE - 0.5), 1, 1),
-                    (((j + 1) % SIZE - 0.5, (i + 1) % SIZE - 0.5), 1, 1),
-                ]
-                for (x, y), w, h in parts:
-                    rect = plt.Rectangle((x, y), w, h,
-                                        linewidth=1, edgecolor=color, facecolor='none')
-                    ax.add_patch(rect)
-
+        prev_prev_grid = prev_grid
+        prev_grid = grid
+        grid = new_grid
 
         return [img, title]
 
     ani = animation.FuncAnimation(
-        fig, update, frames=phases, interval=interval, blit=False, repeat=False
+        fig, update, frames=range(1, phases + 1), interval=interval, blit=False, repeat=False
     )
     plt.show()
-
 
 if __name__ == "__main__":
     """
@@ -164,4 +193,4 @@ if __name__ == "__main__":
     phases = 250
     prob = 0.5  # probability of cell being alive
 
-    run_gui_simulation(phases, prob, interval=2000)
+    run_gui_simulation(phases, prob, interval=1000)
