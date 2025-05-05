@@ -7,15 +7,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 # --- Constants ---
-DEFAULT_SIZE = 100  # Default grid size
-DEFAULT_PHASES = 100  # Default number of simulation phases
-RESULTS_DIR = "results"  # Directory to store result images
+DEFAULT_SIZE = 100
+DEFAULT_PHASES = 100
+RESULTS_DIR = "results"
 
 # --- Helper Functions ---
 def create_initial_grid(size=DEFAULT_SIZE):
-    """
-    Create the initial grid with a glider pattern positioned at the center.
-    """
     grid = np.zeros((size, size), dtype=int)
     mid = size // 2
     glider_pattern = np.array([
@@ -29,9 +26,6 @@ def create_initial_grid(size=DEFAULT_SIZE):
     return grid
 
 def extract_block(grid, i, j, size, wraparound):
-    """
-    Extract a 2x2 block from the grid, considering wraparound if enabled.
-    """
     if wraparound:
         return np.array([
             [grid[i % size, j % size], grid[i % size, (j + 1) % size]],
@@ -41,23 +35,17 @@ def extract_block(grid, i, j, size, wraparound):
         return grid[i:i+2, j:j+2]
 
 def apply_rules_to_block(block):
-    """
-    Apply the automaton rules to a given 2x2 block.
-    """
     num_alive = np.sum(block)
     match num_alive:
         case 0 | 1 | 4:
-            return 1 - block  # Flip all cells
+            return 1 - block
         case 2:
-            return block  # No change
+            return block
         case 3:
             flipped = 1 - block
-            return np.rot90(flipped, 2)  # Rotate 180 degrees
+            return np.rot90(flipped, 2)
 
 def get_block_coords(size, phase, wraparound):
-    """
-    Determine the starting coordinates for the blocks to update in the current phase.
-    """
     coords = []
     start = 0 if phase % 2 == 1 else 1
     for i in range(start, size, 2):
@@ -67,9 +55,6 @@ def get_block_coords(size, phase, wraparound):
     return coords
 
 def update_grid(grid, size, phase, wraparound):
-    """
-    Update the entire grid by applying rules to each block.
-    """
     coords = get_block_coords(size, phase, wraparound)
     for i, j in coords:
         block = extract_block(grid, i, j, size, wraparound)
@@ -83,18 +68,12 @@ def update_grid(grid, size, phase, wraparound):
     return grid
 
 def calculate_center_of_mass(grid):
-    """
-    Calculate the center of mass of all live cells in the grid.
-    """
     live_cells = np.argwhere(grid == 1)
     if len(live_cells) == 0:
         return (0, 0)
     return np.mean(live_cells, axis=0)
 
 def ensure_results_dir():
-    """
-    Ensure that the results directory exists.
-    """
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
 
@@ -102,9 +81,6 @@ def ensure_results_dir():
 class GliderSimulation:
     def __init__(self, root=None, size=DEFAULT_SIZE, phases=DEFAULT_PHASES, 
                  wraparound=True, interval=100):
-        """
-        Initialize the simulation with parameters.
-        """
         self.size = size
         self.phases = phases
         self.wraparound = wraparound
@@ -112,76 +88,63 @@ class GliderSimulation:
         self.current_phase = 0
         self.grid = create_initial_grid(size)
         self.centers = []
-        
-        # Setup GUI if a root window is provided
+
         self.root = root
         if root:
             self.setup_gui()
-        
+
     def setup_gui(self):
-        """
-        Set up the GUI elements for animation and visualization.
-        """
         self.root.title(f"Glider Automaton Simulation - Size: {self.size}, Wraparound: {self.wraparound}")
+        try:
+            if self.root.tk.call('tk', 'windowingsystem') == 'win32':
+                self.root.state('zoomed')
+        except:
+            pass
 
-        self.root.state('zoomed')  # For Windows
-
-        # Create frames
         main_frame = tk.Frame(self.root)
         main_frame.pack(fill=tk.BOTH, expand=True)
-        
+
         control_frame = tk.Frame(main_frame)
         control_frame.pack(side=tk.BOTTOM, fill=tk.X)
-        
-        # Create grid visualization
+
         self.fig = Figure(figsize=(6, 6))
         self.ax = self.fig.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.fig, master=main_frame)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        # Create path visualization
+
         self.path_fig = Figure(figsize=(6, 3))
         self.path_ax = self.path_fig.add_subplot(111)
         self.path_canvas = FigureCanvasTkAgg(self.path_fig, master=main_frame)
         self.path_canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
-        
-        # Control buttons
+
         self.start_button = tk.Button(control_frame, text="Start", command=self.start_simulation)
         self.start_button.pack(side=tk.LEFT, padx=5, pady=5)
-        
+
         self.pause_button = tk.Button(control_frame, text="Pause", command=self.pause_simulation, state=tk.DISABLED)
         self.pause_button.pack(side=tk.LEFT, padx=5, pady=5)
-        
+
         self.reset_button = tk.Button(control_frame, text="Reset", command=self.reset_simulation)
         self.reset_button.pack(side=tk.LEFT, padx=5, pady=5)
-        
+
         self.save_button = tk.Button(control_frame, text="Save Results", command=self.save_results)
         self.save_button.pack(side=tk.RIGHT, padx=5, pady=5)
-        
-        # Phase counter
+
         self.phase_var = tk.StringVar(value="Phase: 0")
         self.phase_label = tk.Label(control_frame, textvariable=self.phase_var)
         self.phase_label.pack(side=tk.LEFT, padx=20, pady=5)
-        
-        # Initial plot
+
         self.update_plots()
-        
-        # Animation state
+
         self.running = False
         self.job_id = None
-        
+
     def update_plots(self):
-        """
-        Update both the grid and path plots.
-        """
-        # Update grid plot
         self.ax.clear()
         self.ax.imshow(self.grid, cmap='binary', interpolation='nearest')
         self.ax.set_title(f"Glider Simulation - Phase {self.current_phase}")
         self.ax.axis('off')
         self.canvas.draw()
-        
-        # Update path plot if we have centers
+
         if self.centers:
             centers_array = np.array(self.centers)
             self.path_ax.clear()
@@ -192,52 +155,38 @@ class GliderSimulation:
             self.path_ax.grid(True)
             self.path_fig.tight_layout()
             self.path_canvas.draw()
-            
+
     def step_simulation(self):
-        """
-        Advance the simulation by one phase.
-        """
         if self.current_phase < self.phases:
             self.current_phase += 1
             self.grid = update_grid(self.grid.copy(), self.size, self.current_phase, self.wraparound)
             c_mass = calculate_center_of_mass(self.grid)
             self.centers.append(c_mass)
             self.phase_var.set(f"Phase: {self.current_phase}")
-            
             self.update_plots()
-            
-            # Schedule next update if still running
+
             if self.running and self.current_phase < self.phases:
                 self.job_id = self.root.after(self.interval, self.step_simulation)
             elif self.current_phase >= self.phases:
                 self.running = False
                 self.start_button.config(state=tk.DISABLED)
                 self.pause_button.config(state=tk.DISABLED)
-    
+
     def start_simulation(self):
-        """
-        Start or resume the simulation.
-        """
         self.running = True
         self.start_button.config(state=tk.DISABLED)
         self.pause_button.config(state=tk.NORMAL)
         self.step_simulation()
-        
+
     def pause_simulation(self):
-        """
-        Pause the simulation.
-        """
         self.running = False
         if self.job_id:
             self.root.after_cancel(self.job_id)
             self.job_id = None
         self.start_button.config(state=tk.NORMAL)
         self.pause_button.config(state=tk.DISABLED)
-        
+
     def reset_simulation(self):
-        """
-        Reset the simulation to initial state.
-        """
         self.pause_simulation()
         self.current_phase = 0
         self.grid = create_initial_grid(self.size)
@@ -245,14 +194,10 @@ class GliderSimulation:
         self.phase_var.set(f"Phase: {self.current_phase}")
         self.update_plots()
         self.start_button.config(state=tk.NORMAL)
-        
+
     def save_results(self):
-        """
-        Save the current simulation results.
-        """
         ensure_results_dir()
-        
-        # Save grid image
+
         plt.figure()
         plt.imshow(self.grid, cmap='binary', interpolation='nearest')
         plt.title(f"Glider Simulation - Phase {self.current_phase}")
@@ -260,8 +205,7 @@ class GliderSimulation:
         grid_path = os.path.join(RESULTS_DIR, f"glider_grid_phase-{self.current_phase}_wrap-{self.wraparound}.png")
         plt.savefig(grid_path)
         plt.close()
-        
-        # Save path plot if we have centers
+
         if self.centers:
             centers_array = np.array(self.centers)
             plt.figure()
@@ -273,14 +217,10 @@ class GliderSimulation:
             path_path = os.path.join(RESULTS_DIR, f"glider_path_wrap-{self.wraparound}.png")
             plt.savefig(path_path)
             plt.close()
-            
+
         tk.messagebox.showinfo("Save Complete", f"Results saved to {RESULTS_DIR} directory.")
 
-# --- Non-GUI Simulation Runner ---
 def run_glider_simulation(size=DEFAULT_SIZE, phases=DEFAULT_PHASES, wraparound=True, save_prefix="glider"):
-    """
-    Run the glider simulation for a given number of phases and save the result plot.
-    """
     ensure_results_dir()
     grid = create_initial_grid(size)
     centers = []
@@ -289,7 +229,7 @@ def run_glider_simulation(size=DEFAULT_SIZE, phases=DEFAULT_PHASES, wraparound=T
         c_mass = calculate_center_of_mass(grid)
         centers.append(c_mass)
         print(f"Phase {phase}: Center of Mass at ({c_mass[0]:.2f}, {c_mass[1]:.2f})")
-    
+
     centers = np.array(centers)
     if centers.ndim == 2:
         plt.figure()
@@ -304,35 +244,25 @@ def run_glider_simulation(size=DEFAULT_SIZE, phases=DEFAULT_PHASES, wraparound=T
     else:
         print("No movement detected, skipping plot.")
 
-# --- Main Entry Point ---
 def main():
-    """
-    Main function to parse command-line arguments and run the simulation.
-    """
     parser = argparse.ArgumentParser(description='Glider Automaton Simulator (Task 2)')
     parser.add_argument('--size', type=int, default=DEFAULT_SIZE, help='Grid size (default: 100)')
     parser.add_argument('--phases', type=int, default=DEFAULT_PHASES, help='Number of phases to simulate (default: 100)')
-    parser.add_argument('--wrap', type=str, default='true', choices=['true', 'false'], 
-                        help='Enable grid wraparound (default: true)')
-    parser.add_argument('--interval', type=int, default=100, 
-                        help='Animation interval in milliseconds (default: 100)')
+    parser.add_argument('--wrap', type=str, default='true', choices=['true', 'false'], help='Enable grid wraparound (default: true)')
+    parser.add_argument('--interval', type=int, default=100, help='Animation interval in milliseconds (default: 100)')
     parser.add_argument('--nogui', action='store_true', help='Run without GUI')
-    
     args = parser.parse_args()
-    
-    # Convert wraparound string to boolean
+
     wraparound = (args.wrap.lower() == 'true')
-    
+
     if args.nogui:
-        # Run in command-line mode
         run_glider_simulation(size=args.size, phases=args.phases, wraparound=wraparound)
     else:
-        # Run in GUI mode
         root = tk.Tk()
         sim = GliderSimulation(
             root=root,
-            size=args.size, 
-            phases=args.phases, 
+            size=args.size,
+            phases=args.phases,
             wraparound=wraparound,
             interval=args.interval
         )
