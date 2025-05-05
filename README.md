@@ -9,7 +9,7 @@ The GUI interface allows users to configure simulation parameters (grid size, nu
 
 ---
 
-## 📦 Requirements & Setup Instructions
+## Requirements & Setup Instructions
 
 This simulator requires **Python 3.6+** and the following Python packages:
 - `numpy`
@@ -18,7 +18,7 @@ This simulator requires **Python 3.6+** and the following Python packages:
 
 ---
 
-## 🛠️ Installation Instructions
+##  Installation Instructions
 
 ### 1. Install Python 3 (if not already installed)
 You can install Python using your system’s package manager or download it from [python.org](https://www.python.org/).
@@ -42,7 +42,7 @@ pip install numpy matplotlib
 
 ---
 
-## ▶️ Running the Application
+##  Running the Application
 
 Use the following command to launch the main graphical simulator:
 ```bash
@@ -53,7 +53,7 @@ Make sure you are inside the project root directory where `run_all.py` is locate
 
 ---
 
-## 📁 Output Data
+## Output Data
 
 Simulation outputs are saved in:
 - `data_task1/plots/` → metric graphs
@@ -62,7 +62,7 @@ Simulation outputs are saved in:
 
 ---
 
-## 🧪 Notes
+## Notes
 
 - If you encounter `externally-managed-environment` errors, consider using a virtual environment or pass `--break-system-packages` to `pip install`.
 - GUI should work on Linux, macOS, and Windows. Automatic window maximization is only supported on Windows.
