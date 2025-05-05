@@ -63,6 +63,4 @@ This project provides a visual simulator for a 2D block-based cellular automaton
 - Graphs: Stability, alive ratio, diversity, and oscillation trends over phases
 - CSV: All metrics stored by phase, saved per experiment configuration
 
-## Authors
 
-This simulator was developed as part of a computational biology course assignment. It is designed for experimentation and extension.
