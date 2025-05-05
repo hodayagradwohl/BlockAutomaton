@@ -1,6 +1,6 @@
 # Block Automaton Simulator
 
-This project provides a visual simulator for a 2D block-based cellular automaton, implemented in Python. The automaton operates on an N×N grid, where updates are applied to non-overlapping 2×2 blocks in alternating red-blue phases. The simulation supports different initial configurations, including randomly generated states and specific patterns such as gliders, traffic lights, and blinkers.
+This project provides a visual simulator for a 2D block-based cellular automaton, implemented in Python. The automaton operates on an NxN grid, where updates are applied to non-overlapping 2x2 blocks in alternating red-blue phases. The simulation supports different initial configurations, including randomly generated states and specific patterns such as gliders, traffic lights, and blinkers.
 
 ## Features
 
@@ -16,51 +16,57 @@ This project provides a visual simulator for a 2D block-based cellular automaton
 ## Requirements
 
 - Python 3.6 or higher
-- Required libraries: `numpy`, `matplotlib`, `pandas`, and `tkinter`
+- Internet connection for installing dependencies (first-time run)
 
-> Note: On some Linux/WSL systems, `tkinter` may need to be installed manually with:
-> ```
-> sudo apt update
-> sudo apt install python3-tk
-> ```
+## Installation & Execution
 
-> If pip is not installed, use:
-> ```
-> sudo apt install python3-pip
-> ```
+Follow these steps to run the simulator:
 
-## Installation and Usage
+### 1. Clone the repository
+```bash
+git clone https://github.com/hodayagradwohl/BlockAutomaton.git
+cd BlockAutomaton
+```
 
-1. Clone or download the repository:
-   ```
-   git clone https://github.com/<your-username>/BlockAutomaton.git
-   cd BlockAutomaton
-   ```
+### 2. Ensure pip is installed
+If pip is not installed on your system, run:
+```bash
+sudo apt update
+sudo apt install python3-pip
+```
 
-2. Run the project using:
-   ```
-   python3 run_all.py
-   ```
+### 3. Run the launcher script
+This script automatically installs the required Python libraries and opens the GUI.
 
-   This script will automatically:
-   - Check for missing libraries
-   - Attempt to install any missing dependencies
-   - Launch the graphical user interface
+```bash
+python3 run_all.py
+```
 
-3. From the GUI, select a task and configure simulation parameters such as:
-   - Grid size (must be even)
-   - Number of simulation phases
-   - Initial alive cell probability
-   - Wraparound toggle
-   - Animation speed
+If you encounter any permission errors, try:
 
-4. After the simulation, access your results:
-   - Graphs: `data_task1/plots/`
-   - CSV files: `data_task1/CSV/`
+```bash
+python3 -m pip install --user numpy matplotlib pandas
+```
+
+> **Note:** On first run, required libraries will be installed: `numpy`, `matplotlib`, `pandas`, `tkinter`.
+
+## Directory Structure
+
+- `BlockAutomatonGUI.py` — Main GUI interface
+- `task1.py` — Random initial state simulation
+- `task2.py` — Glider pattern simulation
+- `task3.py` — Special pattern experiment (traffic light, blinker)
+- `run_all.py` — Script for launching the GUI and installing dependencies
+- `README.md` — Instructions and documentation
 
 ## Output
 
-- Graphs: Stability, alive ratio, diversity, and oscillation trends over phases
-- CSV: All metrics stored by phase, saved per experiment configuration
+- Metrics CSV files are saved to: `data_task1/CSV/`
+- Graphs are saved to: `data_task1/plots/`
+- Glider plots are saved to: `results/` (for task2)
 
+## Troubleshooting
 
+- If the GUI doesn't launch, verify that `tkinter` is installed.
+- If `pip` is missing, run `sudo apt install python3-pip`.
+- For WSL users: use `sudo apt install python3-tk` to enable GUI support.
