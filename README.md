@@ -1,72 +1,69 @@
 # Block Automaton Simulator
 
-This project provides a visual simulator for a 2D block-based cellular automaton, implemented in Python. The automaton operates on an NxN grid, where updates are applied to non-overlapping 2x2 blocks in alternating red-blue phases. The simulation supports different initial configurations, including randomly generated states and specific patterns such as gliders, traffic lights, and blinkers.
+This project provides a visual simulator for a 2D block-based cellular automaton implemented in Python. It includes three main tasks:
+- Task 1: Random Initial State
+- Task 2: Glider Patterns
+- Task 3: Special Patterns (Traffic Light & Blinker)
 
-## Features
+The GUI interface allows users to configure simulation parameters (grid size, number of phases, probability, wraparound mode, etc.) and view or export analysis metrics.
 
-- Graphical user interface (GUI) for task selection and parameter configuration
-- Three experiment types: random state, glider patterns, and special patterns
-- Visualization of grid evolution in real-time
-- Metric tracking: stability, alive cell ratio, block diversity, and oscillation
-- CSV export of all metric data
-- Plot generation for metric trends
-- Wraparound mode toggle
-- Full automation of environment setup and dependency installation
+---
 
-## Requirements
+## 📦 Requirements & Setup Instructions
 
-- Python 3.6 or higher
-- Internet connection for installing dependencies (first-time run)
+This simulator requires **Python 3.6+** and the following Python packages:
+- `numpy`
+- `matplotlib`
+- `tkinter` (usually pre-installed with Python)
 
-## Installation & Execution
+---
 
-Follow these steps to run the simulator:
+## 🛠️ Installation Instructions
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/hodayagradwohl/BlockAutomaton.git
-cd BlockAutomaton
-```
+### 1. Install Python 3 (if not already installed)
+You can install Python using your system’s package manager or download it from [python.org](https://www.python.org/).
 
-### 2. Ensure pip is installed
-If pip is not installed on your system, run:
+For Ubuntu/Debian:
 ```bash
 sudo apt update
-sudo apt install python3-pip
+sudo apt install python3 python3-pip python3-venv python3-tk
 ```
 
-### 3. Run the launcher script
-This script automatically installs the required Python libraries and opens the GUI.
+### 2. Create and activate a virtual environment (optional but recommended)
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
 
+### 3. Install the required Python packages
+```bash
+pip install numpy matplotlib
+```
+
+---
+
+## ▶️ Running the Application
+
+Use the following command to launch the main graphical simulator:
 ```bash
 python3 run_all.py
 ```
 
-If you encounter any permission errors, try:
+Make sure you are inside the project root directory where `run_all.py` is located.
 
-```bash
-python3 -m pip install --user numpy matplotlib pandas
-```
+---
 
-> **Note:** On first run, required libraries will be installed: `numpy`, `matplotlib`, `pandas`, `tkinter`.
+## 📁 Output Data
 
-## Directory Structure
+Simulation outputs are saved in:
+- `data_task1/plots/` → metric graphs
+- `data_task1/CSV/` → raw CSV metric data
+- `results/` → images from Task 2 path tracking
 
-- `BlockAutomatonGUI.py` — Main GUI interface
-- `task1.py` — Random initial state simulation
-- `task2.py` — Glider pattern simulation
-- `task3.py` — Special pattern experiment (traffic light, blinker)
-- `run_all.py` — Script for launching the GUI and installing dependencies
-- `README.md` — Instructions and documentation
+---
 
-## Output
+## 🧪 Notes
 
-- Metrics CSV files are saved to: `data_task1/CSV/`
-- Graphs are saved to: `data_task1/plots/`
-- Glider plots are saved to: `results/` (for task2)
-
-## Troubleshooting
-
-- If the GUI doesn't launch, verify that `tkinter` is installed.
-- If `pip` is missing, run `sudo apt install python3-pip`.
-- For WSL users: use `sudo apt install python3-tk` to enable GUI support.
+- If you encounter `externally-managed-environment` errors, consider using a virtual environment or pass `--break-system-packages` to `pip install`.
+- GUI should work on Linux, macOS, and Windows. Automatic window maximization is only supported on Windows.
+- Ensure that `tkinter` is properly installed if you face GUI launch issues.
