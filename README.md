@@ -1,45 +1,68 @@
-# סימולטור אוטומט בלוקים – Block Automaton Simulator
+# Block Automaton Simulator
 
-## תיאור כללי
+This project provides a visual simulator for a 2D block-based cellular automaton, implemented in Python. The automaton operates on an N×N grid, where updates are applied to non-overlapping 2×2 blocks in alternating red-blue phases. The simulation supports different initial configurations, including randomly generated states and specific patterns such as gliders, traffic lights, and blinkers.
 
-הפרויקט מדמה מערכת אוטומט תאים (cellular automaton) הפועלת על רשת בגודל NxN, כאשר הכללים מבוצעים על בלוקים של 2x2 תאים.
+## Features
 
-הממשק מאפשר:
-- לבחור בין 3 סוגי סימולציות (מצב רנדומלי, גליידרים, תבניות מיוחדות)
-- לשלוט בפרמטרים כמו גודל הרשת, הסתברות התחלתית, מספר שלבים ועוד
-- לנתח ביצועים דרך גרפים (אחוז תאים חיים, יציבות, גיוון, תנודות)
-- לייצא נתונים לקובצי CSV
+- Graphical user interface (GUI) for task selection and parameter configuration
+- Three experiment types: random state, glider patterns, and special patterns
+- Visualization of grid evolution in real-time
+- Metric tracking: stability, alive cell ratio, block diversity, and oscillation
+- CSV export of all metric data
+- Plot generation for metric trends
+- Wraparound mode toggle
+- Full automation of environment setup and dependency installation
 
-## מבנה הפרויקט
+## Requirements
 
-- `BlockAutomatonGUI.py` – ממשק גרפי להרצת הסימולציה.
-- `task1.py` – סימולציה עם רשת רנדומלית.
-- `task2.py` – סימולציית גליידר ובדיקת מסלול תנועה.
-- `task3.py` – סימולציות עם תבניות מיוחדות וניתוח ממוצעים.
-- `run_all.py` – קובץ מרכזי לבדיקת התקנות והרצה מלאה.
-- תיקיות `data_task1/` – כוללות תוצאות הסימולציות (גרפים, CSV).
+- Python 3.6 or higher
+- Required libraries: `numpy`, `matplotlib`, `pandas`, and `tkinter`
 
-## דרישות מערכת
+> Note: On some Linux/WSL systems, `tkinter` may need to be installed manually with:
+> ```
+> sudo apt update
+> sudo apt install python3-tk
+> ```
 
-- Python 3.6 ומעלה
-- ספריות:
-  - `numpy`
-  - `matplotlib`
-  - `pandas`
-  - `tkinter` (נדרשת עבור GUI)
+> If pip is not installed, use:
+> ```
+> sudo apt install python3-pip
+> ```
 
-## הוראות התקנה והרצה
+## Installation and Usage
 
-```bash
-git clone https://github.com/hodayagradwohl/BlockAutomaton.git
-cd BlockAutomaton
-python3 run_all.py
+1. Clone or download the repository:
+   ```
+   git clone https://github.com/<your-username>/BlockAutomaton.git
+   cd BlockAutomaton
+   ```
 
-הקובץ run_all.py יוודא שהספריות מותקנות (כולל pip), ויפעיל את הממשק הגרפי.
+2. Run the project using:
+   ```
+   python3 run_all.py
+   ```
 
-אם tkinter חסרה, יש להריץ:
+   This script will automatically:
+   - Check for missing libraries
+   - Attempt to install any missing dependencies
+   - Launch the graphical user interface
 
-bash
-Copy
-Edit
-sudo apt install python3-tk
+3. From the GUI, select a task and configure simulation parameters such as:
+   - Grid size (must be even)
+   - Number of simulation phases
+   - Initial alive cell probability
+   - Wraparound toggle
+   - Animation speed
+
+4. After the simulation, access your results:
+   - Graphs: `data_task1/plots/`
+   - CSV files: `data_task1/CSV/`
+
+## Output
+
+- Graphs: Stability, alive ratio, diversity, and oscillation trends over phases
+- CSV: All metrics stored by phase, saved per experiment configuration
+
+## Authors
+
+This simulator was developed as part of a computational biology course assignment. It is designed for experimentation and extension.
